@@ -30,5 +30,6 @@ TODO
 
 ## Licenses
 
-The software parts are under GPL-2.0 (GNU General Public License v2.0)
+The software parts are under GPL-2.0 (GNU General Public License v2.0).
+
 The hardware parts are under CC BY-NC-SA 4.0 (Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International)
