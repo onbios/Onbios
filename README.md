@@ -1,12 +1,12 @@
 <p align="center">
   <a href="https://onbios.fr" target="blank">
-    <img src="./docs/logo_title.png" height="160px" alt="Logo" />
+    <img src="http://onbios.fr/wp-content/uploads/2018/09/LogoOnbios.png" height="160px" alt="Logo" />
   </a>
   <br>
 </p>
 
 <p align="center">
-  <i>:fire: A Web framework to create enterprise-grade Node.JS applications :books: :microscope:</i>
+  <i>:fire: Scientific instruments for your labs & classes. :books: :microscope:</i>
 </p>
 
 <p align="center">
@@ -22,12 +22,13 @@ Currently the followings instruments are available :
 
 ## :mortar_board: Get started
 
-TODO
+TODO. Please [contact us](http://onbios.fr/contact/)
 
 ## Contributing
 
 TODO
 
-## License
+## Licenses
 
-GPL v2.0
+The software parts are under GPL-2.0 (GNU General Public License v2.0)
+The hardware parts are under CC BY-NC-SA 4.0 (Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International)
