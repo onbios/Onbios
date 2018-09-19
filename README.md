@@ -11,6 +11,7 @@
 
 <p align="center">
   <a href="https://onbios.fr/">Website</a>
+  <a href="https://onbios.gitbook.io/onbios/">Docs</a>
 </p>
 
 ## :clipboard: Description
@@ -22,7 +23,11 @@ Currently the followings instruments are available :
 
 ## :mortar_board: Get started
 
-TODO. Please [contact us](http://onbios.fr/contact/)
+Prepare your soldering iron & your cutting pliers.
+
+Install the [Arduino IDE](https://www.arduino.cc/en/Main/Software)
+
+:point_right: [Continue with the tutorial](https://onbios.gitbook.io/onbios/) :seedling: 
 
 ## Contributing
 
