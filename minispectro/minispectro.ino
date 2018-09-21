@@ -1,10 +1,7 @@
-/*
-Basic Code for the Minispectro
-Copyright (C) 2018 Silvestre Perret, Arnaud Bauer, Guillaume Dominici
+#include <Wire.h>
 
-This program is free software under the terms of the GPL-2.0 Licence 
-(https://github.com/onbios/Onbios/blob/master/LICENSE)
-*/
+#include <LiquidCrystal_I2C.h>
+
 
 /*
   
@@ -28,29 +25,29 @@ This program is free software under the terms of the GPL-2.0 Licence
 
 //appel de la bibliotheque du capteur
 #include "AS726X.h" 
-//appel de la bibliotheque cristaux liquide pour l'ecran          
-#include <LiquidCrystal.h>    
+//appel de la bibliotheque cristaux liquide pour l'ecran            
 
 //creation de l'objet sensor de classe AS726X
 AS726X sensor;
+LiquidCrystal_I2C lcd(0x27,20,4);
 
 //******************* DEFINITION DES CONSTANTES *********************************************************************************************************
 
 //coefficient directeur par canal (corrections pour obtenir les memes valeurs d'absorbance qu'avec un spectro de laboratoire)
-float coefViolet = 0.998 ;
-float coefBlue = 0.912 ;
-float coefGreen = 0.593 ;
-float coefYellow = 0.554 ;
-float coefOrange = 1.02 ;
-float coefRed = 0.963 ;
+//float coefViolet = 0.998 ;
+//float coefBlue = 0.912 ;
+//float coefGreen = 0.593 ;
+//float coefYellow = 0.554 ;
+//float coefOrange = 1.02 ;
+//float coefRed = 0.963 ;
 
 //Definition des longueurs d'onde pour l'affichage des resultats sur l'ecran
-float coefficients [6] = {0.998, 0.912, 0.593, 0.554, 1.02, 0.963} ;
+float coefficients [6] = {1, 1, 1, 1, 1, 1} ;
 int waveLengths [6] = {450, 500, 550, 570, 600, 650} ;
 String colors [6] = {"V", "B", "G", "Y", "O", "R"} ;
 
 //definition de parametres lies a la mesure
-float changeAbsThreshold = 0.4 ;   // seuil pour la détection d'insertion de cuve valeur initiale 0.4
+float changeAbsThreshold = 0.1 ;   // seuil pour la détection d'insertion de cuve valeur initiale 0.4
 int heatingDuration = 120 ; // en secondes
 long timeLedOff = 28L * 1000L ; // en millisecondes. "L" signifie que la variable est de type 'long'
 long timeLedOn = 8L * 1000L ;   // en millisecondes. "L" signifie que la variable est de type 'long'
@@ -66,20 +63,6 @@ float absIntensities [6]; // Tableau des absorbances aux 6 longueurs d'onde.
 const int ledPin = 7 ;
 bool ledOn = false ;
 
-//definition des pins de l'ecran LCD pour la connexion avec la carte Arduino
-const int rs = 12,
-          en = 11,
-          d4 = 5,
-          d5 = 4,
-          d6 = 3,
-          d7 = 2;
-
-//definition du contraste de l'ecran LCD
-const int contrastPin = 9 ;
-int contrastValue = 100 ; 
-          
-LiquidCrystal lcd(rs, en, d4, d5, d6, d7);  
-
 
 
 //******************* SETUP n'est effectue qu'une seule fois **************************************************************************************//   
@@ -90,9 +73,11 @@ void setup() {
   pinMode(ledPin,OUTPUT) ;  // mode de la pin a laquelle est connectee la led en OUTPUT
   switchOnLed() ;           // on allume la LED
   sensor.begin() ;          // mise en route du capteur           
-  pinMode(contrastPin,OUTPUT) ;     // mode de la pin 9 utilisee pour regler le contraste de l'ecran en OUTPUT   
-  analogWrite(contrastPin,contrastValue) ;  //  application de la valeur contrastValue définie plus haut a la pin 9  
-  lcd.begin(16, 2) ;        // mise en route de l'ecran LCD, 16 caracteres, 2 lignes   
+  //pinMode(contrastPin,OUTPUT) ;     // mode de la pin 9 utilisee pour regler le contraste de l'ecran en OUTPUT   
+  //analogWrite(contrastPin,contrastValue) ;  //  application de la valeur contrastValue définie plus haut a la pin 9  
+  //lcd.begin(16, 2) ;        // mise en route de l'ecran LCD, 16 caracteres, 2 lignes   
+  lcd.init() ;
+  lcd.backlight() ;
   lcd.print("Initialisation...") ;  //affichage d'un message sur l'ecran            
   delay(2000) ;             // mise en pause du programme pendant 2 secondes pour permettre la lecture     
   lcd.clear() ;             // on efface l'écran
@@ -332,6 +317,3 @@ void switchOffLed() {
   ledOn = false ;
   timestamp = millis() ;
 }
-
-
-.
