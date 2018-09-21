@@ -2,7 +2,6 @@
   <a href="https://onbios.fr" target="blank">
     <img src="./.github/logo.png" height="160px" alt="Logo" />
   </a>
-  <br>
 </p>
 
 <p align="center">
