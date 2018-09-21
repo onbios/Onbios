@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://onbios.fr" target="blank">
-    <img src="http://onbios.fr/wp-content/uploads/2018/09/LogoOnbios.png" height="160px" alt="Logo" />
+    <img src="./.github/log.png" height="160px" alt="Logo" />
   </a>
   <br>
 </p>
@@ -31,7 +31,7 @@ Install the [Arduino IDE](https://www.arduino.cc/en/Main/Software)
 
 ## Contributing
 
-TODO
+See the [contribution guidelines](https://github.com/onbios/Onbios/blob/master/CONTRIBUTING.md)
 
 ## Licenses
 
