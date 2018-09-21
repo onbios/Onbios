@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://onbios.fr" target="blank">
-    <img src="./.github/log.png" height="160px" alt="Logo" />
+    <img src="./.github/logo.png" height="160px" alt="Logo" />
   </a>
   <br>
 </p>
