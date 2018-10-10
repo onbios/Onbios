@@ -48,9 +48,9 @@ String colors [6] = {"V", "B", "G", "Y", "O", "R"} ;
 
 //definition de parametres lies a la mesure
 float changeAbsThreshold = 0.1 ;   // seuil pour la détection d'insertion de cuve valeur initiale 0.4
-int heatingDuration = 120 ; // en secondes
-long timeLedOff = 28L * 1000L ; // en millisecondes. "L" signifie que la variable est de type 'long'
-long timeLedOn = 8L * 1000L ;   // en millisecondes. "L" signifie que la variable est de type 'long'
+int heatingDuration = 200 ; // en secondes, la bonne valeur est 300
+long timeLedOff = 24L * 1000L ; // en millisecondes. "L" signifie que la variable est de type 'long'
+long timeLedOn = 1L * 1000L ;   // en millisecondes. "L" signifie que la variable est de type 'long'
 long timestamp;                 // délai pour la détection de cuve
 unsigned long msecondes ;       // en millisecondes variable pour l'affichage du temps sur le port serie
  
@@ -60,8 +60,16 @@ float blankIntensities [6]; // Tableau des intensite mesurees sur le blanc.
 float absIntensities [6]; // Tableau des absorbances aux 6 longueurs d'onde.
 
 //definition des pins hors ecran LCD
-const int ledPin = 7 ;
+const int ledPin = 3 ;    //on se place sur un port PWM
+int ledIntensity = 1 ;     //intensité de la LED à calibrer
 bool ledOn = false ;
+
+bool modeViolet = false ;
+bool modeBleu = false ;
+bool modeVert = false ;
+bool modeJaune = false ;
+bool modeOrange = false ;
+bool modeRouge = false ;
 
 
 
@@ -71,7 +79,7 @@ void setup() {
   // Initialisation de la carte Arduino, du capteur et de l'écran.
   Serial.begin(115200) ;    // Mise en route du port Serie (communication avec l'ordinateur). On precise la vitesse de communication
   pinMode(ledPin,OUTPUT) ;  // mode de la pin a laquelle est connectee la led en OUTPUT
-  switchOnLed() ;           // on allume la LED
+  //switchOnLed() ;           // on allume la LED
   sensor.begin() ;          // mise en route du capteur           
   //pinMode(contrastPin,OUTPUT) ;     // mode de la pin 9 utilisee pour regler le contraste de l'ecran en OUTPUT   
   //analogWrite(contrastPin,contrastValue) ;  //  application de la valeur contrastValue définie plus haut a la pin 9  
@@ -79,9 +87,10 @@ void setup() {
   lcd.init() ;
   lcd.backlight() ;
   lcd.print("Initialisation...") ;  //affichage d'un message sur l'ecran            
-  delay(2000) ;             // mise en pause du programme pendant 2 secondes pour permettre la lecture     
+  delay(2000) ;             // mise en pause du programme pendant 2 secondes pour permettre la lecture   
+  //insérer ici la fonction de choix du mode
+  ledCalibration() ;
   lcd.clear() ;             // on efface l'écran
-  
   // On prechauffe la Led (fonctions definies plus bas).
   preheat() ;
   // On fait le blanc
@@ -95,6 +104,10 @@ void loop() {
   //on utilise la fonction priseMesure pour prendre les mesures d'intensite lumineuse aux 6 longueurs d'onde
   takeMeasure() ;
   //on utilise la fonction calculAbsorbance pour calculer les absorbances
+  if (intensities[0] == 0) {
+    chooseMode() ;
+    takeMeasure() ;
+  }
   computeAbsorbance(intensities, blankIntensities) ;
   //on utilise la fonction printResultsLCD pour afficher les resultats sur l'ecran LCD
   printResultsLCD() ;
@@ -114,6 +127,7 @@ void takeMeasure() {
   
   sensor.takeMeasurements() ;   // le capteur prend les mesures et les met en memoire
   sensor.printMeasurements() ;  // puis a la meme ligne, on affiche les intensites mesurees sur le port serie
+  
   switchOffLed() ;              // on eteint la LED
   msecondes = millis();         // on affecte le nombre de millisecondes ecoulees depuis la mise en route (obtenues par la fonction millis()) à la variable msecondes
   Serial.print(" Temps (s): "); // on affiche sur le port série "Temps (s) :"
@@ -126,6 +140,9 @@ void takeMeasure() {
   intensities [3] = sensor.getCalibratedYellow() ;
   intensities [4] = sensor.getCalibratedOrange() ;
   intensities [5] = sensor.getCalibratedRed() ;
+
+  lcd.clear() ;
+  
   delay(100);                  // on attend 100ms
   lcd.clear() ;                // on efface l'ecran
 }
@@ -244,10 +261,12 @@ void detectCuvetteInsertion() {
     if(ledOn && (millis() - timestamp > timeLedOn)) { 
       switchOffLed() ;
       takeSimpleMeasure(true) ; // with sensorLed ON
+      Serial.println(ledOn) ;
     }
     else if ((not ledOn) && (millis() - timestamp > timeLedOff)) {
       switchOnLed() ;
       takeSimpleMeasure(true) ; // with sensorLed ON
+      Serial.println(ledOn) ;
     }
 
     for (int k=0; k<6; k++) {
@@ -275,15 +294,82 @@ void detectCuvetteInsertion() {
 void printResultsLCD() {
   lcd.clear() ;                   // on commence par effacer ce qu'il y avait sur l'écran
   // pour chacune des 6 longueurs d'onde, on affiche le résultat sur l'écran. Par ex "Absorbance 550nm 0.63", puis on efface l'écran et on passe à la longueur d'onde suivante
-  for (int k=0; k < 6; k++) {     
-    lcd.print("Absorbance " + String(waveLengths[k]) + "nm") ;
+  if (modeViolet == true) {
+    lcd.print("Absorbance " + String(waveLengths[0]) + "nm") ;
     int cursorX = 12 ;            // on ajuste la position du curseur sur l'ecran en fonction de la taille du resultat a afficher
-    if (absIntensities[k] < 0) {cursorX -= 1;}
-    if (abs(absIntensities[k]) > 10) {cursorX -= 1;}
+    if (absIntensities[0] < 0) {cursorX -= 1;}
+    if (abs(absIntensities[0]) > 10) {cursorX -= 1;}
     lcd.setCursor(cursorX, 1) ;
-    lcd.print(absIntensities[k]);
-    delay(4000) ;                 // on laisse le resultat de chaque longueur d'onde affiche 4 secondes
-    lcd.clear() ;                 // on efface ce qui est affiche sur l'ecran
+    lcd.print(absIntensities[0]);
+    delay(8000) ;                 // on laisse le resultat de chaque longueur d'onde affiche 4 secondes
+    lcd.clear() ;  
+  }
+
+  if (modeBleu == true) {
+    lcd.print("Absorbance " + String(waveLengths[1]) + "nm") ;
+    int cursorX = 12 ;            // on ajuste la position du curseur sur l'ecran en fonction de la taille du resultat a afficher
+    if (absIntensities[1] < 0) {cursorX -= 1;}
+    if (abs(absIntensities[1]) > 10) {cursorX -= 1;}
+    lcd.setCursor(cursorX, 1) ;
+    lcd.print(absIntensities[1]);
+    delay(8000) ;                 // on laisse le resultat de chaque longueur d'onde affiche 4 secondes
+    lcd.clear() ;  
+  }
+
+  if (modeVert == true) {
+    lcd.print("Absorbance " + String(waveLengths[2]) + "nm") ;
+    int cursorX = 12 ;            // on ajuste la position du curseur sur l'ecran en fonction de la taille du resultat a afficher
+    if (absIntensities[2] < 0) {cursorX -= 1;}
+    if (abs(absIntensities[2]) > 10) {cursorX -= 1;}
+    lcd.setCursor(cursorX, 1) ;
+    lcd.print(absIntensities[2]);
+    delay(8000) ;                 // on laisse le resultat de chaque longueur d'onde affiche 4 secondes
+    lcd.clear() ;  
+  }
+
+  if (modeJaune == true) {
+    lcd.print("Absorbance " + String(waveLengths[3]) + "nm") ;
+    int cursorX = 12 ;            // on ajuste la position du curseur sur l'ecran en fonction de la taille du resultat a afficher
+    if (absIntensities[3] < 0) {cursorX -= 1;}
+    if (abs(absIntensities[3]) > 10) {cursorX -= 1;}
+    lcd.setCursor(cursorX, 1) ;
+    lcd.print(absIntensities[3]);
+    delay(8000) ;                 // on laisse le resultat de chaque longueur d'onde affiche 4 secondes
+    lcd.clear() ;  
+  }
+
+  if (modeOrange == true) {
+    lcd.print("Absorbance " + String(waveLengths[4]) + "nm") ;
+    int cursorX = 12 ;            // on ajuste la position du curseur sur l'ecran en fonction de la taille du resultat a afficher
+    if (absIntensities[4] < 0) {cursorX -= 1;}
+    if (abs(absIntensities[4]) > 10) {cursorX -= 1;}
+    lcd.setCursor(cursorX, 1) ;
+    lcd.print(absIntensities[4]);
+    delay(8000) ;                 // on laisse le resultat de chaque longueur d'onde affiche 4 secondes
+    lcd.clear() ;  
+  }
+
+  if (modeRouge == true) {
+    lcd.print("Absorbance " + String(waveLengths[5]) + "nm") ;
+    int cursorX = 12 ;            // on ajuste la position du curseur sur l'ecran en fonction de la taille du resultat a afficher
+    if (absIntensities[5] < 0) {cursorX -= 1;}
+    if (abs(absIntensities[5]) > 10) {cursorX -= 1;}
+    lcd.setCursor(cursorX, 1) ;
+    lcd.print(absIntensities[5]);
+    delay(8000) ;                 // on laisse le resultat de chaque longueur d'onde affiche 4 secondes
+    lcd.clear() ;  
+  }
+  if (modeViolet == false && modeBleu == false && modeVert == false && modeJaune == false && modeOrange == false && modeRouge==false) {
+    for (int k=0; k < 6; k++) {     
+      lcd.print("Absorbance " + String(waveLengths[k]) + "nm") ;
+      int cursorX = 12 ;            // on ajuste la position du curseur sur l'ecran en fonction de la taille du resultat a afficher
+      if (absIntensities[k] < 0) {cursorX -= 1;}
+      if (abs(absIntensities[k]) > 10) {cursorX -= 1;}
+      lcd.setCursor(cursorX, 1) ;
+      lcd.print(absIntensities[k]);
+      delay(4000) ;                 // on laisse le resultat de chaque longueur d'onde affiche 4 secondes
+      lcd.clear() ;                 // on efface ce qui est affiche sur l'ecran
+    }
   }
 }
 
@@ -303,7 +389,7 @@ void printIntensities(float * intensitiesToPrint) {
 // La fonction suivante permet d'allumer la LED blanche
 void switchOnLed() {
   //on applique un potentiel de 5V sur la pin 7
-  digitalWrite(7,HIGH) ;
+  analogWrite(ledPin,ledIntensity) ;
   ledOn = true ;
   timestamp = millis() ;
 }
@@ -313,7 +399,167 @@ void switchOnLed() {
 // La fonction suivante permet d'éteindre la LED blanche
 void switchOffLed() {
   //on applique un potentiel de 0V sur la pin 7
-  digitalWrite(7,LOW) ;
+  analogWrite(ledPin,0) ;
   ledOn = false ;
   timestamp = millis() ;
+}
+
+void chooseMode() {
+  modeViolet = false ;
+  modeBleu = false ;
+  modeVert = false ;
+  modeJaune = false ;
+  modeOrange = false ;
+  modeRouge = false ;
+  
+                          
+  lcd.print("Choix du mode") ;
+  delay(3000) ;
+  lcd.clear() ;
+  long previousMillis = millis() ;
+    
+    while (millis() - previousMillis < 4000) {      //Pendant trois secondes on attend que l'on retire la cuve noire
+      lcd.print("Choisir lambda") ;
+      lcd.setCursor(0,1) ;
+      lcd.print("= 450nm?") ;
+      switchOnLed() ;
+      delay(3990) ;
+      sensor.takeMeasurements() ;
+      lcd.clear();
+      
+      if (sensor.getCalibratedViolet() != 0) {
+        lcd.clear() ;
+        lcd.print("Reglage : 450nm") ; 
+        delay(4000) ;
+        modeViolet = true ;  
+        return ;   
+      }
+      switchOffLed() ;      
+    }
+    previousMillis = millis() ;
+
+    while (millis() - previousMillis < 4000) {      //Pendant trois secondes on attend que l'on retire la cuve noire
+      lcd.print("Choisir lambda") ;
+      lcd.setCursor(0,1) ;
+      lcd.print("= 500nm?") ;
+      switchOnLed() ;
+      delay(3990) ;
+      sensor.takeMeasurements() ;
+      lcd.clear() ;
+      
+      if (sensor.getCalibratedViolet() != 0) {
+        lcd.clear() ;
+        lcd.print("Reglage : 500nm") ; 
+        delay(4000) ;
+        modeBleu = true ;  
+        return ;
+      }
+      switchOffLed() ;          
+    }
+    previousMillis = millis() ;
+
+    while (millis() - previousMillis < 4000) {      //Pendant trois secondes on attend que l'on retire la cuve noire
+      lcd.print("Choisir lambda") ;
+      lcd.setCursor(0,1) ;
+      lcd.print("= 550nm?") ;
+      switchOnLed() ;
+      delay(3990) ;
+      sensor.takeMeasurements() ;
+      lcd.clear() ;
+      
+      if (sensor.getCalibratedViolet() != 0) {
+        lcd.clear() ;
+        lcd.print("Reglage : 550nm") ; 
+        delay(4000) ;
+        modeVert = true ;  
+        return ;
+      }
+      switchOffLed() ;          
+    }
+    previousMillis = millis() ;
+
+    while (millis() - previousMillis < 4000) {      //Pendant trois secondes on attend que l'on retire la cuve noire
+      lcd.print("Choisir lambda") ;
+      lcd.setCursor(0,1) ;
+      lcd.print("= 570nm?") ;
+      switchOnLed() ;
+      delay(3990) ;
+      sensor.takeMeasurements() ;
+      lcd.clear() ;
+      
+      if (sensor.getCalibratedViolet() != 0) {
+        lcd.clear() ;
+        lcd.print("Reglage : 570nm") ; 
+        delay(4000) ;
+        modeJaune = true ;  
+        return ;
+      }
+      switchOffLed() ;        
+    }
+    previousMillis = millis() ;
+
+    while (millis() - previousMillis < 4000) {      //Pendant trois secondes on attend que l'on retire la cuve noire
+      lcd.print("Choisir lambda") ;
+      lcd.setCursor(0,1) ;
+      lcd.print("= 600nm?") ;
+      switchOnLed() ;
+      delay(3990) ;
+      sensor.takeMeasurements() ;
+      lcd.clear() ;
+      
+      if (sensor.getCalibratedViolet() != 0) {
+        lcd.clear() ;
+        lcd.print("Reglage : 600nm") ; 
+        delay(4000) ;
+        modeOrange = true ; 
+        return ; 
+      }
+      switchOffLed() ;         
+    }
+    previousMillis = millis() ;
+
+    while (millis() - previousMillis < 4000) {      //Pendant trois secondes on attend que l'on retire la cuve noire
+      lcd.print("Choisir lambda") ;
+      lcd.setCursor(0,1) ;
+      lcd.print("= 650nm?") ;
+      switchOnLed() ;
+      delay(3990) ;
+      sensor.takeMeasurements() ;
+      lcd.clear() ;
+      
+      if (sensor.getCalibratedViolet() != 0) {
+        lcd.clear() ;
+        lcd.print("Reglage : 650nm") ; 
+        delay(4000) ;
+        modeRouge = true ;  
+        return ; 
+      }
+      switchOffLed() ;      
+    }
+
+  if (modeViolet == false && modeBleu == false && modeVert == false && modeJaune == false && modeOrange == false && modeRouge == false) {
+    lcd.clear() ;
+    lcd.print("Retour au mode") ;
+    lcd.setCursor(0,1) ;
+    lcd.print("normal !") ;
+    delay(4000) ;
+    lcd.clear() ;
+  }
+}
+
+void ledCalibration() {
+  int violet = 0 ;
+  ledIntensity = 0 ;
+  Serial.println("Réglage de la LED") ;
+  while (violet < 20000) {
+    analogWrite(ledPin,ledIntensity) ; 
+    delay(10) ;
+    sensor.takeMeasurements() ;
+    violet = sensor.getCalibratedViolet() ;
+    Serial.print("Violet = ") ;
+    Serial.println(violet) ;
+    ledIntensity ++ ;
+  }
+  Serial.print("Intensité de la LED = ") ;
+  Serial.println(ledIntensity) ;
 }
