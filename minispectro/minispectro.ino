@@ -1,45 +1,18 @@
-#include <Wire.h>
 
-#include <LiquidCrystal_I2C.h>
+//*********************APPEL DES BIBLIOTHEQUES*********************************************************************
 
+#include <Wire.h>                 //appel de la bibliotheque permettant de gérer les protocoles I2C
 
-/*
-  
-  The circuit:
- * LCD RS pin to digital pin 12
- * LCD Enable pin to digital pin 11
- * LCD D4 pin to digital pin 5
- * LCD D5 pin to digital pin 4
- * LCD D6 pin to digital pin 3
- * LCD D7 pin to digital pin 2
- * LCD R/W pin to ground
- * LCD VSS pin to ground
- * LCD VCC pin to 5V
- * 10K resistor:
- * ends to +5V and ground
- * wiper to LCD VO pin (pin 3)
+#include <LiquidCrystal_I2C.h>    //appel de la bibliotheque cristaux liquide pour l'ecran  
 
- http://www.arduino.cc/en/Tutorial/LiquidCrystalHelloWorld
+#include "AS726X.h"               //appel de la bibliotheque du capteur             
 
-*/
+AS726X sensor;                    //creation de l'objet sensor de classe AS726X
 
-//appel de la bibliotheque du capteur
-#include "AS726X.h" 
-//appel de la bibliotheque cristaux liquide pour l'ecran            
-
-//creation de l'objet sensor de classe AS726X
-AS726X sensor;
-LiquidCrystal_I2C lcd(0x27,20,4);
+LiquidCrystal_I2C lcd(0x27,20,4); //creation de l'objet lcd de classe LiquidCrystal_I2C
 
 //******************* DEFINITION DES CONSTANTES *********************************************************************************************************
 
-//coefficient directeur par canal (corrections pour obtenir les memes valeurs d'absorbance qu'avec un spectro de laboratoire)
-//float coefViolet = 0.998 ;
-//float coefBlue = 0.912 ;
-//float coefGreen = 0.593 ;
-//float coefYellow = 0.554 ;
-//float coefOrange = 1.02 ;
-//float coefRed = 0.963 ;
 
 //Definition des longueurs d'onde pour l'affichage des resultats sur l'ecran
 float coefficients [6] = {1, 1, 1, 1, 1, 1} ;
@@ -64,7 +37,7 @@ const int ledPin = 3 ;    //on se place sur un port PWM
 int ledIntensity = 1 ;     //intensité de la LED à calibrer
 bool ledOn = false ;
 
-bool modeViolet = false ;
+bool modeViolet = false ;   //booléens utilisés pour la fonction de changement de mode
 bool modeBleu = false ;
 bool modeVert = false ;
 bool modeJaune = false ;
@@ -404,7 +377,7 @@ void switchOffLed() {
   timestamp = millis() ;
 }
 
-void chooseMode() {
+void chooseMode() {         // Cette fonction permet de choisir la longueur d'onde sur laquelle la machine fonctionne en insérant une cuve opaque.
   modeViolet = false ;
   modeBleu = false ;
   modeVert = false ;
@@ -413,7 +386,7 @@ void chooseMode() {
   modeRouge = false ;
   
                           
-  lcd.print("Choix du mode") ;
+  lcd.print("Choix du mode") ;    // On affiche "Choix du mode à l'écran durant 3s
   delay(3000) ;
   lcd.clear() ;
   long previousMillis = millis() ;
@@ -424,10 +397,10 @@ void chooseMode() {
       lcd.print("= 450nm?") ;
       switchOnLed() ;
       delay(3990) ;
-      sensor.takeMeasurements() ;
+      sensor.takeMeasurements() ;                   //On prend une mesure
       lcd.clear();
       
-      if (sensor.getCalibratedViolet() != 0) {
+      if (sensor.getCalibratedViolet() != 0) {      //Si cette mesure comporte un violet non nul (pourrait fonctionner avec les autres canaux) cela veut dire que la cuve opaque a été retirée et que l'utilisateur veut choisir cette longueur d'onde
         lcd.clear() ;
         lcd.print("Reglage : 450nm") ; 
         delay(4000) ;
@@ -547,11 +520,11 @@ void chooseMode() {
   }
 }
 
-void ledCalibration() {
+void ledCalibration() {                     //Fonction qui permet de calibrer la LED au démarrage de l'appareil et donc de s'affranchir des différence qui peuvent exister entre les composants
   int violet = 0 ;
-  ledIntensity = 0 ;
+  ledIntensity = 0 ;                        //Cette valeur est proportionnellement liée au flux lumineux émis par la diode
   Serial.println("Réglage de la LED") ;
-  while (violet < 20000) {
+  while (violet < 5000) {                   //On cherche à atteindre une certaine intensité lumineuse lue par le capteur sur le canal Violet, ici 5000. Tant que cette valeur n'est pas atteinte au augmente ledIntensity
     analogWrite(ledPin,ledIntensity) ; 
     delay(10) ;
     sensor.takeMeasurements() ;
