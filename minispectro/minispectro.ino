@@ -15,7 +15,7 @@ LiquidCrystal_I2C lcd(0x27,20,4); //creation de l'objet lcd de classe LiquidCrys
 
 
 //Definition des longueurs d'onde pour l'affichage des resultats sur l'ecran
-float coefficients [6] = {2, 2, 2, 2, 2, 2} ;
+float coefficients [6] = {1.8, 1.8, 1.8, 1.8, 1.8, 1.8} ;
 int waveLengths [6] = {450, 500, 550, 570, 600, 650} ;
 String colors [6] = {"V", "B", "G", "Y", "O", "R"} ;
 
