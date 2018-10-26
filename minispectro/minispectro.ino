@@ -21,7 +21,7 @@ String colors [6] = {"V", "B", "G", "Y", "O", "R"} ;
 
 //definition de parametres lies a la mesure
 float changeAbsThreshold = 0.1 ;   // seuil pour la détection d'insertion de cuve valeur initiale 0.4
-int heatingDuration = 200 ; // en secondes, la bonne valeur est 300
+int heatingDuration = 120 ; // en secondes, la bonne valeur est 300
 long timeLedOff = 24L * 1000L ; // en millisecondes. "L" signifie que la variable est de type 'long'
 long timeLedOn = 1L * 1000L ;   // en millisecondes. "L" signifie que la variable est de type 'long'
 long timestamp;                 // délai pour la détection de cuve
@@ -53,7 +53,8 @@ void setup() {
   Serial.begin(115200) ;    // Mise en route du port Serie (communication avec l'ordinateur). On precise la vitesse de communication
   pinMode(ledPin,OUTPUT) ;  // mode de la pin a laquelle est connectee la led en OUTPUT
   //switchOnLed() ;           // on allume la LED
-  sensor.begin() ;          // mise en route du capteur           
+  sensor.begin() ;          // mise en route du capteur    
+  sensor.setIntegrationTime(255) ;       
   //pinMode(contrastPin,OUTPUT) ;     // mode de la pin 9 utilisee pour regler le contraste de l'ecran en OUTPUT   
   //analogWrite(contrastPin,contrastValue) ;  //  application de la valeur contrastValue définie plus haut a la pin 9  
   //lcd.begin(16, 2) ;        // mise en route de l'ecran LCD, 16 caracteres, 2 lignes   
@@ -65,7 +66,7 @@ void setup() {
   ledCalibration() ;
   lcd.clear() ;             // on efface l'écran
   // On prechauffe la Led (fonctions definies plus bas).
-  preheat() ;
+  //preheat() ;
   // On fait le blanc
   takeBlank() ;
 } 
