@@ -21,7 +21,8 @@ String colors [6] = {"V", "B", "G", "Y", "O", "R"} ;
 
 //definition de parametres lies a la mesure
 float changeAbsThreshold = 0.1 ;   // seuil pour la détection d'insertion de cuve valeur initiale 0.4
-int heatingDuration = 120 ; // en secondes, la bonne valeur est 300
+int heatingDuration = 120 ;       // la fonction preheat n'est à présent plus utilisée
+int intensiteSeuil = 5000 ;               //Seuil d'intensité pour la LED
 long timeLedOff = 24L * 1000L ; // en millisecondes. "L" signifie que la variable est de type 'long'
 long timeLedOn = 1L * 1000L ;   // en millisecondes. "L" signifie que la variable est de type 'long'
 long timestamp;                 // délai pour la détection de cuve
@@ -35,7 +36,7 @@ float absIntensities [6]; // Tableau des absorbances aux 6 longueurs d'onde.
 //definition des pins hors ecran LCD
 const int ledPin = 3 ;    //on se place sur un port PWM
 int ledIntensity = 1 ;     //intensité de la LED à calibrer
-bool ledOn = false ;
+bool ledOn = false ;      // etat de la LED, quand ledOn = false, la l'état de la LED est éteint
 
 bool modeViolet = false ;   //booléens utilisés pour la fonction de changement de mode
 bool modeBleu = false ;
@@ -66,7 +67,7 @@ void setup() {
   ledCalibration() ;
   lcd.clear() ;             // on efface l'écran
   // On prechauffe la Led (fonctions definies plus bas).
-  //preheat() ;
+  //preheat() ;             // la fonction preheat a été rendue obsolète et n'est plus utilisée ce qui permet un démarrage immédiat de la machine
   // On fait le blanc
   takeBlank() ;
 } 
@@ -78,9 +79,9 @@ void loop() {
   //on utilise la fonction priseMesure pour prendre les mesures d'intensite lumineuse aux 6 longueurs d'onde
   takeMeasure() ;
   //on utilise la fonction calculAbsorbance pour calculer les absorbances
-  if (intensities[0] == 0) {
-    chooseMode() ;
-    takeMeasure() ;
+  if (intensities[0] == 0) {      // dans le cas ou la cuve opaque est insérée, les intensités lues par le capteur sont nulles, on rentre dans la phase de changement de longueur d'onde
+    chooseMode() ;                // fonction qui permet de selectionner la longueur d'onde de travail
+    takeMeasure() ;               // prise de mesure
   }
   computeAbsorbance(intensities, blankIntensities) ;
   //on utilise la fonction printResultsLCD pour afficher les resultats sur l'ecran LCD
@@ -362,10 +363,9 @@ void printIntensities(float * intensitiesToPrint) {
 
 // La fonction suivante permet d'allumer la LED blanche
 void switchOnLed() {
-  //on applique un potentiel de 5V sur la pin 7
-  analogWrite(ledPin,ledIntensity) ;
-  ledOn = true ;
-  timestamp = millis() ;
+  analogWrite(ledPin,ledIntensity) ; // on applique une tension de 5V  sur la pin de la LED, à une fréquence qui est égale à ledIntensity
+  ledOn = true ;                     // l'état de la led passe à true : la LED est allumée
+  timestamp = millis() ;            
 }
 
 //------------------------------------------------------------------------------------------------------------
@@ -373,14 +373,14 @@ void switchOnLed() {
 // La fonction suivante permet d'éteindre la LED blanche
 void switchOffLed() {
   //on applique un potentiel de 0V sur la pin 7
-  analogWrite(ledPin,0) ;
-  ledOn = false ;
+  analogWrite(ledPin,0) ;           // on applique une tension nulle surla pin de la LED 
+  ledOn = false ;                   // l'état de la LED passe à false : la LED est éteinte
   timestamp = millis() ;
 }
 
 void chooseMode() {         // Cette fonction permet de choisir la longueur d'onde sur laquelle la machine fonctionne en insérant une cuve opaque.
-  modeViolet = false ;
-  modeBleu = false ;
+  modeViolet = false ;      //modeViolet = false signifie que pour le moment la longueur d'onde 450nm n'a pas été sélectionnée
+  modeBleu = false ;        //idem pour les autres longueurs d'onde
   modeVert = false ;
   modeJaune = false ;
   modeOrange = false ;
@@ -393,26 +393,26 @@ void chooseMode() {         // Cette fonction permet de choisir la longueur d'on
   long previousMillis = millis() ;
     
     while (millis() - previousMillis < 4000) {      //Pendant trois secondes on attend que l'on retire la cuve noire
-      lcd.print("Choisir lambda") ;
+      lcd.print("Choisir lambda") ;                 //On affiche "Choisir lambda = 450nm?" à l'écran
       lcd.setCursor(0,1) ;
       lcd.print("= 450nm?") ;
-      switchOnLed() ;
-      delay(3990) ;
+      switchOnLed() ;                               //On allume la LED
+      delay(3990) ;                                 //On attend 3990ms pour prendre la mesure suivante, cela permet de laisser l'information affichée à l'écran et au manipulateur de retirer la cuve opaque s'il souhaite choisir cette longueur d'onde
       sensor.takeMeasurements() ;                   //On prend une mesure
-      lcd.clear();
+      lcd.clear();                                  //On efface les informations affichées à l'écran
       
       if (sensor.getCalibratedViolet() != 0) {      //Si cette mesure comporte un violet non nul (pourrait fonctionner avec les autres canaux) cela veut dire que la cuve opaque a été retirée et que l'utilisateur veut choisir cette longueur d'onde
         lcd.clear() ;
         lcd.print("Reglage : 450nm") ; 
         delay(4000) ;
-        modeViolet = true ;  
+        modeViolet = true ;                         //La longueur d'onde 450nm a été choisie
         return ;   
       }
       switchOffLed() ;      
     }
     previousMillis = millis() ;
 
-    while (millis() - previousMillis < 4000) {      //Pendant trois secondes on attend que l'on retire la cuve noire
+    while (millis() - previousMillis < 4000) {      //Pendant quatre secondes on attend que l'on retire la cuve noire
       lcd.print("Choisir lambda") ;
       lcd.setCursor(0,1) ;
       lcd.print("= 500nm?") ;
@@ -432,7 +432,7 @@ void chooseMode() {         // Cette fonction permet de choisir la longueur d'on
     }
     previousMillis = millis() ;
 
-    while (millis() - previousMillis < 4000) {      //Pendant trois secondes on attend que l'on retire la cuve noire
+    while (millis() - previousMillis < 4000) {      //Pendant quatre secondes on attend que l'on retire la cuve noire
       lcd.print("Choisir lambda") ;
       lcd.setCursor(0,1) ;
       lcd.print("= 550nm?") ;
@@ -452,7 +452,7 @@ void chooseMode() {         // Cette fonction permet de choisir la longueur d'on
     }
     previousMillis = millis() ;
 
-    while (millis() - previousMillis < 4000) {      //Pendant trois secondes on attend que l'on retire la cuve noire
+    while (millis() - previousMillis < 4000) {      //Pendant quatre secondes on attend que l'on retire la cuve noire
       lcd.print("Choisir lambda") ;
       lcd.setCursor(0,1) ;
       lcd.print("= 570nm?") ;
@@ -472,7 +472,7 @@ void chooseMode() {         // Cette fonction permet de choisir la longueur d'on
     }
     previousMillis = millis() ;
 
-    while (millis() - previousMillis < 4000) {      //Pendant trois secondes on attend que l'on retire la cuve noire
+    while (millis() - previousMillis < 4000) {      //Pendant quatre secondes on attend que l'on retire la cuve noire
       lcd.print("Choisir lambda") ;
       lcd.setCursor(0,1) ;
       lcd.print("= 600nm?") ;
@@ -492,7 +492,7 @@ void chooseMode() {         // Cette fonction permet de choisir la longueur d'on
     }
     previousMillis = millis() ;
 
-    while (millis() - previousMillis < 4000) {      //Pendant trois secondes on attend que l'on retire la cuve noire
+    while (millis() - previousMillis < 4000) {      //Pendant quatre secondes on attend que l'on retire la cuve noire
       lcd.print("Choisir lambda") ;
       lcd.setCursor(0,1) ;
       lcd.print("= 650nm?") ;
@@ -511,7 +511,7 @@ void chooseMode() {         // Cette fonction permet de choisir la longueur d'on
       switchOffLed() ;      
     }
 
-  if (modeViolet == false && modeBleu == false && modeVert == false && modeJaune == false && modeOrange == false && modeRouge == false) {
+  if (modeViolet == false && modeBleu == false && modeVert == false && modeJaune == false && modeOrange == false && modeRouge == false) { //Si aucune des longueurs d'ondes n'a été choisie on repasse au défilement normal des mesures
     lcd.clear() ;
     lcd.print("Retour au mode") ;
     lcd.setCursor(0,1) ;
@@ -525,14 +525,14 @@ void ledCalibration() {                     //Fonction qui permet de calibrer la
   int violet = 0 ;
   ledIntensity = 0 ;                        //Cette valeur est proportionnellement liée au flux lumineux émis par la diode
   Serial.println("Réglage de la LED") ;
-  while (violet < 5000) {                   //On cherche à atteindre une certaine intensité lumineuse lue par le capteur sur le canal Violet, ici 5000. Tant que cette valeur n'est pas atteinte au augmente ledIntensity
+  while (violet < intensiteSeuil) {                   //On cherche à atteindre une certaine intensité lumineuse lue par le capteur sur le canal Violet, ici 5000. Tant que cette valeur n'est pas atteinte au augmente ledIntensity
     analogWrite(ledPin,ledIntensity) ; 
     delay(10) ;
     sensor.takeMeasurements() ;
     violet = sensor.getCalibratedViolet() ;
     Serial.print("Violet = ") ;
     Serial.println(violet) ;
-    ledIntensity ++ ;
+    ledIntensity ++ ;                                 //On incrémente l'intensité perçue par la LED
   }
   Serial.print("Intensité de la LED = ") ;
   Serial.println(ledIntensity) ;
