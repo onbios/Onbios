@@ -387,7 +387,7 @@ void chooseMode() {         // Cette fonction permet de choisir la longueur d'on
   modeRouge = false ;
   
                           
-  lcd.print("Choix du mode") ;    // On affiche "Choix du mode à l'écran durant 3s
+  lcd.print("Choix de lambda") ;    // On affiche "Choix du mode à l'écran durant 3s
   delay(3000) ;
   lcd.clear() ;
   long previousMillis = millis() ;
