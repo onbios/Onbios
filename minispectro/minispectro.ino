@@ -275,7 +275,7 @@ void printResultsLCD() {
     if (absIntensities[0] < 0) {cursorX -= 1;}
     if (abs(absIntensities[0]) > 10) {cursorX -= 1;}
     lcd.setCursor(cursorX, 1) ;
-    lcd.print(absIntensities[0]);
+    lcd.print(absIntensities[0],3);
     delay(8000) ;                 // on laisse le resultat de chaque longueur d'onde affiche 4 secondes
     lcd.clear() ;  
   }
@@ -286,7 +286,7 @@ void printResultsLCD() {
     if (absIntensities[1] < 0) {cursorX -= 1;}
     if (abs(absIntensities[1]) > 10) {cursorX -= 1;}
     lcd.setCursor(cursorX, 1) ;
-    lcd.print(absIntensities[1]);
+    lcd.print(absIntensities[1],3);
     delay(8000) ;                 // on laisse le resultat de chaque longueur d'onde affiche 4 secondes
     lcd.clear() ;  
   }
@@ -297,7 +297,7 @@ void printResultsLCD() {
     if (absIntensities[2] < 0) {cursorX -= 1;}
     if (abs(absIntensities[2]) > 10) {cursorX -= 1;}
     lcd.setCursor(cursorX, 1) ;
-    lcd.print(absIntensities[2]);
+    lcd.print(absIntensities[2],3);
     delay(8000) ;                 // on laisse le resultat de chaque longueur d'onde affiche 4 secondes
     lcd.clear() ;  
   }
@@ -308,7 +308,7 @@ void printResultsLCD() {
     if (absIntensities[3] < 0) {cursorX -= 1;}
     if (abs(absIntensities[3]) > 10) {cursorX -= 1;}
     lcd.setCursor(cursorX, 1) ;
-    lcd.print(absIntensities[3]);
+    lcd.print(absIntensities[3],3);
     delay(8000) ;                 // on laisse le resultat de chaque longueur d'onde affiche 4 secondes
     lcd.clear() ;  
   }
@@ -319,7 +319,7 @@ void printResultsLCD() {
     if (absIntensities[4] < 0) {cursorX -= 1;}
     if (abs(absIntensities[4]) > 10) {cursorX -= 1;}
     lcd.setCursor(cursorX, 1) ;
-    lcd.print(absIntensities[4]);
+    lcd.print(absIntensities[4],3);
     delay(8000) ;                 // on laisse le resultat de chaque longueur d'onde affiche 4 secondes
     lcd.clear() ;  
   }
@@ -330,7 +330,7 @@ void printResultsLCD() {
     if (absIntensities[5] < 0) {cursorX -= 1;}
     if (abs(absIntensities[5]) > 10) {cursorX -= 1;}
     lcd.setCursor(cursorX, 1) ;
-    lcd.print(absIntensities[5]);
+    lcd.print(absIntensities[5],3);
     delay(8000) ;                 // on laisse le resultat de chaque longueur d'onde affiche 4 secondes
     lcd.clear() ;  
   }
@@ -341,7 +341,7 @@ void printResultsLCD() {
       if (absIntensities[k] < 0) {cursorX -= 1;}
       if (abs(absIntensities[k]) > 10) {cursorX -= 1;}
       lcd.setCursor(cursorX, 1) ;
-      lcd.print(absIntensities[k]);
+      lcd.print(absIntensities[k],3);
       delay(4000) ;                 // on laisse le resultat de chaque longueur d'onde affiche 4 secondes
       lcd.clear() ;                 // on efface ce qui est affiche sur l'ecran
     }
