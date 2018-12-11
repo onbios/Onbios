@@ -9,7 +9,7 @@
 
 AS726X sensor;                    //creation de l'objet sensor de classe AS726X
 
-LiquidCrystal_I2C lcd(0x27,20,4); //creation de l'objet lcd de classe LiquidCrystal_I2C
+LiquidCrystal_I2C lcd(0x3F,20,4); //creation de l'objet lcd de classe LiquidCrystal_I2C
 
 //******************* DEFINITION DES CONSTANTES *********************************************************************************************************
 
@@ -50,6 +50,7 @@ bool modeRouge = false ;
 //******************* SETUP n'est effectue qu'une seule fois **************************************************************************************//   
            
 void setup() {
+  delay(1000);
   // Initialisation de la carte Arduino, du capteur et de l'écran.
   Serial.begin(115200) ;    // Mise en route du port Serie (communication avec l'ordinateur). On precise la vitesse de communication
   pinMode(ledPin,OUTPUT) ;  // mode de la pin a laquelle est connectee la led en OUTPUT
@@ -61,6 +62,19 @@ void setup() {
   //lcd.begin(16, 2) ;        // mise en route de l'ecran LCD, 16 caracteres, 2 lignes   
   lcd.init() ;
   lcd.backlight() ;
+
+  switchOnLed() ;
+  sensor.takeMeasurements() ;
+  while (sensor.getCalibratedViolet() < 1000) {
+    lcd.setCursor(0,0) ;
+    lcd.print("Retirer Mode") ;
+    sensor.takeMeasurements() ;
+    delay(1000) ;
+  }
+
+  lcd.clear() ;
+  switchOffLed() ;
+  
   lcd.print("Initialisation...") ;  //affichage d'un message sur l'ecran            
   delay(2000) ;             // mise en pause du programme pendant 2 secondes pour permettre la lecture   
   //insérer ici la fonction de choix du mode
