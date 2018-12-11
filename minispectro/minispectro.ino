@@ -9,7 +9,7 @@
 
 AS726X sensor;                    //creation de l'objet sensor de classe AS726X
 
-LiquidCrystal_I2C lcd(0x27,20,4); //creation de l'objet lcd de classe LiquidCrystal_I2C
+LiquidCrystal_I2C lcd(0x3F,20,4); //creation de l'objet lcd de classe LiquidCrystal_I2C
 
 //******************* DEFINITION DES CONSTANTES *********************************************************************************************************
 
@@ -50,6 +50,7 @@ bool modeRouge = false ;
 //******************* SETUP n'est effectue qu'une seule fois **************************************************************************************//   
            
 void setup() {
+  delay(1000);
   // Initialisation de la carte Arduino, du capteur et de l'écran.
   Serial.begin(115200) ;    // Mise en route du port Serie (communication avec l'ordinateur). On precise la vitesse de communication
   pinMode(ledPin,OUTPUT) ;  // mode de la pin a laquelle est connectee la led en OUTPUT
@@ -61,6 +62,19 @@ void setup() {
   //lcd.begin(16, 2) ;        // mise en route de l'ecran LCD, 16 caracteres, 2 lignes   
   lcd.init() ;
   lcd.backlight() ;
+
+  switchOnLed() ;
+  sensor.takeMeasurements() ;
+  while (sensor.getCalibratedViolet() < 1000) {
+    lcd.setCursor(0,0) ;
+    lcd.print("Retirer Mode") ;
+    sensor.takeMeasurements() ;
+    delay(1000) ;
+  }
+
+  lcd.clear() ;
+  switchOffLed() ;
+  
   lcd.print("Initialisation...") ;  //affichage d'un message sur l'ecran            
   delay(2000) ;             // mise en pause du programme pendant 2 secondes pour permettre la lecture   
   //insérer ici la fonction de choix du mode
@@ -268,80 +282,75 @@ void detectCuvetteInsertion() {
 
 void printResultsLCD() {
   lcd.clear() ;                   // on commence par effacer ce qu'il y avait sur l'écran
+  int cursorX = 11 ;            // on ajuste la position du curseur sur l'ecran en fonction de la taille du resultat a afficher
+    
   // pour chacune des 6 longueurs d'onde, on affiche le résultat sur l'écran. Par ex "Absorbance 550nm 0.63", puis on efface l'écran et on passe à la longueur d'onde suivante
   if (modeViolet == true) {
     lcd.print("Absorbance " + String(waveLengths[0]) + "nm") ;
-    int cursorX = 12 ;            // on ajuste la position du curseur sur l'ecran en fonction de la taille du resultat a afficher
     if (absIntensities[0] < 0) {cursorX -= 1;}
     if (abs(absIntensities[0]) > 10) {cursorX -= 1;}
     lcd.setCursor(cursorX, 1) ;
-    lcd.print(absIntensities[0],3);
+    lcd.print(absIntensities[0], 3);
     delay(8000) ;                 // on laisse le resultat de chaque longueur d'onde affiche 4 secondes
     lcd.clear() ;  
   }
 
   if (modeBleu == true) {
     lcd.print("Absorbance " + String(waveLengths[1]) + "nm") ;
-    int cursorX = 12 ;            // on ajuste la position du curseur sur l'ecran en fonction de la taille du resultat a afficher
     if (absIntensities[1] < 0) {cursorX -= 1;}
     if (abs(absIntensities[1]) > 10) {cursorX -= 1;}
     lcd.setCursor(cursorX, 1) ;
-    lcd.print(absIntensities[1],3);
+    lcd.print(absIntensities[1], 3);
     delay(8000) ;                 // on laisse le resultat de chaque longueur d'onde affiche 4 secondes
     lcd.clear() ;  
   }
 
   if (modeVert == true) {
     lcd.print("Absorbance " + String(waveLengths[2]) + "nm") ;
-    int cursorX = 12 ;            // on ajuste la position du curseur sur l'ecran en fonction de la taille du resultat a afficher
     if (absIntensities[2] < 0) {cursorX -= 1;}
     if (abs(absIntensities[2]) > 10) {cursorX -= 1;}
     lcd.setCursor(cursorX, 1) ;
-    lcd.print(absIntensities[2],3);
+    lcd.print(absIntensities[2], 3);
     delay(8000) ;                 // on laisse le resultat de chaque longueur d'onde affiche 4 secondes
     lcd.clear() ;  
   }
 
   if (modeJaune == true) {
     lcd.print("Absorbance " + String(waveLengths[3]) + "nm") ;
-    int cursorX = 12 ;            // on ajuste la position du curseur sur l'ecran en fonction de la taille du resultat a afficher
     if (absIntensities[3] < 0) {cursorX -= 1;}
     if (abs(absIntensities[3]) > 10) {cursorX -= 1;}
     lcd.setCursor(cursorX, 1) ;
-    lcd.print(absIntensities[3],3);
+    lcd.print(absIntensities[3], 3);
     delay(8000) ;                 // on laisse le resultat de chaque longueur d'onde affiche 4 secondes
     lcd.clear() ;  
   }
 
   if (modeOrange == true) {
     lcd.print("Absorbance " + String(waveLengths[4]) + "nm") ;
-    int cursorX = 12 ;            // on ajuste la position du curseur sur l'ecran en fonction de la taille du resultat a afficher
     if (absIntensities[4] < 0) {cursorX -= 1;}
     if (abs(absIntensities[4]) > 10) {cursorX -= 1;}
     lcd.setCursor(cursorX, 1) ;
-    lcd.print(absIntensities[4],3);
+    lcd.print(absIntensities[4], 3);
     delay(8000) ;                 // on laisse le resultat de chaque longueur d'onde affiche 4 secondes
     lcd.clear() ;  
   }
 
   if (modeRouge == true) {
     lcd.print("Absorbance " + String(waveLengths[5]) + "nm") ;
-    int cursorX = 12 ;            // on ajuste la position du curseur sur l'ecran en fonction de la taille du resultat a afficher
     if (absIntensities[5] < 0) {cursorX -= 1;}
     if (abs(absIntensities[5]) > 10) {cursorX -= 1;}
     lcd.setCursor(cursorX, 1) ;
-    lcd.print(absIntensities[5],3);
+    lcd.print(absIntensities[5], 3);
     delay(8000) ;                 // on laisse le resultat de chaque longueur d'onde affiche 4 secondes
     lcd.clear() ;  
   }
   if (modeViolet == false && modeBleu == false && modeVert == false && modeJaune == false && modeOrange == false && modeRouge==false) {
     for (int k=0; k < 6; k++) {     
       lcd.print("Absorbance " + String(waveLengths[k]) + "nm") ;
-      int cursorX = 12 ;            // on ajuste la position du curseur sur l'ecran en fonction de la taille du resultat a afficher
       if (absIntensities[k] < 0) {cursorX -= 1;}
       if (abs(absIntensities[k]) > 10) {cursorX -= 1;}
       lcd.setCursor(cursorX, 1) ;
-      lcd.print(absIntensities[k],3);
+      lcd.print(absIntensities[k], 3);
       delay(4000) ;                 // on laisse le resultat de chaque longueur d'onde affiche 4 secondes
       lcd.clear() ;                 // on efface ce qui est affiche sur l'ecran
     }
