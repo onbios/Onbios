@@ -9,7 +9,7 @@
 
 AS726X sensor;                    //creation de l'objet sensor de classe AS726X
 
-LiquidCrystal_I2C lcd(0x3F,20,4); //creation de l'objet lcd de classe LiquidCrystal_I2C
+LiquidCrystal_I2C lcd(0x27,20,4); //creation de l'objet lcd de classe LiquidCrystal_I2C
 
 //******************* DEFINITION DES CONSTANTES *********************************************************************************************************
 
